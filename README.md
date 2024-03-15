@@ -1,10 +1,12 @@
 ## Prerequisites
 - php8.2
+- laravel/framework:10.47 (This is important as whereAny query builder function is being used)
 - mysql8.0
 - supervisor (for running artisan schedule:work on background)
 
 Please note that there is a Dockerfile and docker-compose.yml file that will set up all the necessary enviroment
-It is recommended that you use those docker files for best compatibility
+
+It is recommended that you use Docker for best compatibility
 
 ## Setting up
 - cp .env.example .env
@@ -18,7 +20,7 @@ It is recommended that you use those docker files for best compatibility
 WOOCOMMERCE_BASE_URL="https://interview-test.matat.io"
 WOOCOMMERCE_CONSUMER_KEY="ck_40d0806b16feb3bd67a4d8dbbff163c6dfcf061d"
 WOOCOMMERCE_CONSUMER_SECRET="cs_9544e30809595750f8f1c6f3f9a6efcc38bfd06d"
-ERROR_MAIL_ADDRESS="the email where you want to receivie log files incase schedule command has an error"
+ERROR_MAIL_ADDRESS="the email where you want to receive log files incase schedule command has an error"
 ```
 ## Using Docker
 - Just run 'docker compose up' and it will set everything up
@@ -43,22 +45,18 @@ class BaseModel extends Model
     protected $guarded = [];
 }
 ```
-The project has a BaseModel.php
+- The project has a BaseModel.php
+- Instead of extending Model class, all the models in the project extends this base class
+- This allows me to set some properties for all the models in the project that needs to be the same
+- For eg: I have set the $guarded = [], which will be applied to all the models in the project from now
 
-Instead of extending Model class, all the models in the project extends this base class
-
-This allows me to set some properties for all the models in the project that needs to be the same
-
-For eg: I have set the $guarded = [], which will be applied to all the models in the project from now
-
-#### Stub
+#### Stubs
 Using the command:
 ```bash
 php artisan stub:publish
 ```
-All the stubs have been published
-
-And out of these stubs, mdoel.stub and request.stub has been modified to make development simpler
+- All the stubs have been published
+- And out of these stubs, mdoel.stub and request.stub has been modified to make development simpler
 
 #### Repository Pattern
 The project uses Repository Design Pattern and all the repository and interfaces have been bound in AppServiceProvider.php
@@ -203,7 +201,7 @@ Route::get("/orders", [OrderController::class, "index"]);
 - The following query parameters can be used to filter the order list, all of them can be left empty
 - status: The status of the order (values: completed, processing, pending)
 - limit: Pagination limit per page
-- sort_order: If you want to order by ascending or descending (uses created_at column || values: ASC, DESC || default is DESC)
+- sort_order: If you want to order by ascending or descending order (uses created_at column for sorting || values: ASC, DESC || default is DESC)
 - search_query: Will search using the like operator on number and order_key column 
 - start_date: will show result greater or equal to this date using date_created column 
 - end_date: will show result lesser or equal to this date using date_created column
