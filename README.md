@@ -424,6 +424,37 @@ stdout_logfile=/var/log/laravel-worker.log
 - This will be automatically run if you use Docker
 - Otherwise you will have to set this manually
 
+#### deploy.yml
+```yml
+name: Deploy to Production
+
+on:
+    push:
+        branches: ["main"]
+
+jobs:
+    prod-deploy:
+        name: Deployment Process
+        runs-on: ubuntu-latest
+
+        steps:
+            # - name: Get latest code
+            #   uses: actions/checkout@v3
+            - name: Deployment via SSH
+              uses: appleboy/ssh-action@v1.0.3
+              with:
+                host: ${{ secrets.HOST }}
+                username: ${{ secrets.USERNAME }}
+                key: ${{ secrets.PRIVATE_KEY }}
+                port: ${{ secrets.PORT }}
+                script: |
+                    cd /home/grgbish1/matat.grgbishal.com
+                    git pull origin main
+                    composer install
+                    php artisan migrate --force
+```
+- The following deploy.yml file in .github/workflows folder will automatically push new changes in the main branch to production server
+
 
 
 
