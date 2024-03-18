@@ -23,7 +23,7 @@ class SyncOrdersCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Syncs orders from woocommerce external api to local database';
 
     public function __construct(private OrderRepositoryInterface $order, private ErrorLogService $log_service)
     {
@@ -31,7 +31,9 @@ class SyncOrdersCommand extends Command
     }
 
     /**
-     * Execute the console command.
+     * This command comprises of two important steps
+     * The first gets the orders from the external api
+     * The second upserts data from that api to local database
      */
     public function handle()
     {
