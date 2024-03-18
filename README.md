@@ -8,6 +8,11 @@ Please note that there is a Dockerfile and docker-compose.yml file that will set
 
 It is recommended that you use Docker for best compatibility
 
+## Production
+- The follwing project is hosted in https://matat.grgbishal.com
+- It has its **_APP_ENV_** set to **_testing_** (So the scheduler runs every minute, further more explanation in the documentation below)
+- The swagger API documentation is hosted here: https://leonschiffer.github.io/MatatInterviewTestSwagger
+
 ## Setting up
 - cp .env.example .env
 - composer install
@@ -313,7 +318,6 @@ class Kernel extends ConsoleKernel
 - order:remove-unmodified is responsible for removing orders that are unmodified in the last 90 days
 - Timezone "Asia/Kathmandu" is being used otherwise Laravel will use UTC as the default timezone
 - You can set it here or in config/app.php, its your choice
-- Uncomment the testing section if you want to run in every minute which makes it easier for testing purposes
 
 #### SyncOrdersCommand.php
 ```php
