@@ -15,7 +15,10 @@ class Kernel extends ConsoleKernel
     {
         if (App::environment("testing")) {
             //Testing
+
+            // Ignore this command. This is here just for testing purpose
             $schedule->command("inspire")->everyMinute()->appendOutputTo(storage_path("logs/inspire.log"));
+
             $schedule->command("order:sync-orders")->everyMinute()->timezone("Asia/Kathmandu");
             $schedule->command("order:remove-unmodified")->everyMinute()->timezone("Asia/Kathmandu");
         } else {
