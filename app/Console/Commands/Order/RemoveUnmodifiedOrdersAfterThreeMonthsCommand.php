@@ -31,7 +31,6 @@ class RemoveUnmodifiedOrdersAfterThreeMonthsCommand extends Command
     public function handle()
     {
         $days_to_go_back = $this->argument("days_to_go_back");
-        $this->info("Days to go back: " . $days_to_go_back);
         $affected_rows = $this->order->removeUnmodifiedOrders($days_to_go_back);
         $this->info("Orders deleted: $affected_rows");
     }

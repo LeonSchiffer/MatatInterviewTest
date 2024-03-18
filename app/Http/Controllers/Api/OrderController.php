@@ -21,13 +21,13 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-    public function syncOrders()
-    {
-        $current_date = now();
-        $start_date = $current_date->copy()->subMonth(3)->setTime(0, 0, 0);
-        // return $start_date;
-        $orders = $this->order->getOrdersFromApi($start_date, $current_date);
-        $this->order->syncOrdersFromApi($orders);
-        return $orders;
-    }
+    // public function syncOrders()
+    // {
+    //     $current_date = now();
+    //     $start_date = $current_date->copy()->subMonth(3)->setTime(0, 0, 0);
+    //     // return $start_date;
+    //     $orders = $this->order->getOrdersFromApi($start_date, $current_date);
+    //     $this->order->syncOrdersFromApi($orders);
+    //     return $orders;
+    // }
 }

@@ -9,7 +9,6 @@ else
     cp .env.example .env
 fi
 php artisan migrate
-# php artisan key:generate
 php artisan optimize:clear
 supervisord
 # nohup php artisan queue:work --daemon &

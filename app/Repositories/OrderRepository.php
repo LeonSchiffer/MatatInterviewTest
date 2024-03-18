@@ -23,12 +23,6 @@ class OrderRepository implements OrderRepositoryInterface
     {
     }
 
-    /**
-     * Gets the list of orders from the external WooCommerce API
-     * @param Carbon\Carbon $start_date
-     * @param Carbon\Carbon $end_date
-     * @return Illuminate\Support\Collection
-     */
     public function getOrdersFromApi(Carbon $start_date = null, Carbon $end_date = null): Collection
     {
         $response = $this->woocommerce->request(
@@ -41,7 +35,6 @@ class OrderRepository implements OrderRepositoryInterface
         );
         if ($response->status() != 200)
             throw new OrderApiErrorException($response->body(), $response->status());
-        $response["abc"];
         return $response->collect();
     }
 
