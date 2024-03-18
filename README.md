@@ -132,6 +132,145 @@ class WooCommerceApiRepository implements WooCommerceApiRepositoryInterface
 - This class has a request method which contains the external API request logic
 - In the future, if we were to make more external API calls, we would do it from here
 
+#### OrderRepositoryInterface.php
+```php
+<?php
+
+namespace App\Repositories\Interfaces;
+
+use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+
+interface OrderRepositoryInterface
+{
+    /**
+     * Get order list from the external WooCommerce API
+     * @param Carbon $start_date Filtering the minimum order date to retrieve
+     * @param Carbon $start_date Filtering the maximum order date to retrieve
+     * @return Collection
+     */
+    public function getOrdersFromApi(Carbon $start_date = null, Carbon $end_date = null): Collection;
+
+    /**
+     * Upserts the orders from the external API to our local database
+     * @param Collection $orders The list of orders to upsert
+     * @return array The list of formatted orders that were upserted
+     */
+    public function syncOrdersFromApi(Collection $orders): array;
+
+    /**
+     * Get order list from our local database
+     * @param array $relations The list of relations you want to eager load
+     * @param array $filter The options for filtering the orders list
+     * @param LengthAwarePaginator The paginated data to return
+     */
+    public function getAllOrders(array $relations, array $filter = []): LengthAwarePaginator;
+
+    /**
+     * This deletes the orders that were unmodified for the last x days using the updated_at column
+     * @param int $days_to_go_back The days to go back for the where filter query
+     * @return int Returns the number of rows deleted
+     */
+    public function removeUnmodifiedOrders(int $days_to_go_back): int;
+}
+```
+- Interface which will be implemented by OrderRepository.php
+- PHPDoc is used to document each and every function and will show up in typesense as well
+- Please read the PHPDoc properly to understand what each function does
+
+#### OrderRepository.php
+```php
+<?php
+
+namespace App\Repositories;
+
+use App\Exceptions\Order\OrderApiErrorException;
+use Carbon\Carbon;
+use App\Models\Order;
+use App\Models\LineItem;
+use App\Services\OrderService;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
+use App\Repositories\Interfaces\OrderRepositoryInterface;
+use App\Repositories\Interfaces\WooCommerceApiRepositoryInterface;
+
+/**
+ * @implements OrderRepositoryInterface
+ */
+class OrderRepository implements OrderRepositoryInterface
+{
+    public function __construct(private WooCommerceApiRepositoryInterface $woocommerce, private OrderService $order_service)
+    {
+    }
+
+    public function getOrdersFromApi(Carbon $start_date = null, Carbon $end_date = null): Collection
+    {
+        $response = $this->woocommerce->request(
+            "GET",
+            "/wp-json/wc/v3/orders",
+            query_params: [
+                "after" => $start_date->toIso8601String(),
+                "before" => $end_date->toIso8601String()
+            ]
+        );
+        if ($response->status() != 200)
+            throw new OrderApiErrorException($response->body(), $response->status());
+        return $response->collect();
+    }
+
+    public function syncOrdersFromApi(Collection $orders): array
+    {
+        $data = $this->order_service->formatOrdersForSync($orders);
+        DB::transaction(function () use ($data) {
+            LineItem::upsert(
+                $data["line_items"],
+                ["id"]
+            );
+            Order::upsert(
+                $data["orders"],
+                ["id"]
+            );
+        });
+        return $data;
+    }
+
+    public function getAllOrders(array $relations= [], array $filter = []): LengthAwarePaginator
+    {
+        $orders = Order::with($relations)
+            ->when($filter["search_query"] ?? false, function (Builder $query) use ($filter) {
+                $query->whereAny(
+                    ["number", "order_key"],
+                    "LIKE",
+                    "%{$filter['search_query']}%"
+                );
+            })
+            ->when($filter["start_date"] ?? false, function (Builder $query) use($filter) {
+                $query->whereDate("date_created", ">=", $filter["start_date"]);
+            })
+            ->when($filter["end_date"] ?? false, function (Builder $query) use($filter) {
+                $query->whereDate("date_created", "<=", $filter["end_date"]);
+            })
+            ->when($filter["status"] ?? false, function (Builder $query) use ($filter) {
+                $query->where("status", $filter["status"]);
+            })
+            ->orderBy("date_created", ($filter["sort_order"] ?? "DESC"))
+            ->paginate($filter["limit"] ?? 15);
+        return $orders;
+    }
+
+    public function removeUnmodifiedOrders(int $days_to_go_back): int
+    {
+        $affected_rows = Order::where("updated_at", "<", now()->subDays($days_to_go_back))->delete();
+        return $affected_rows;
+    }
+}
+```
+- This class contains all the business logic for this project
+- Please refer to PHPDoc in OrderRepositoryInterface.php if you have trouble understanding what each function does
+
 #### Kernel.php
 ```php
 <?php
