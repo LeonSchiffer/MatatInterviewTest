@@ -12,6 +12,7 @@ It is recommended that you use Docker for best compatibility
 - The follwing project is hosted in https://matat.grgbishal.com
 - It has its **_APP_ENV_** set to **_testing_** (So the scheduler runs every minute, further more explanation in the _**Kernel.php**_ section below)
 - The swagger API documentation is hosted here: https://leonschiffer.github.io/MatatInterviewTestSwagger
+- This project has **_deploy.yml_** in **_.github/workflows_** folder which will automatically deploy new changes from main branch to production server
 
 ## Setting up
 - cp .env.example .env
