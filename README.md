@@ -11,7 +11,7 @@ It is recommended that you use Docker for best compatibility
 ## Production
 - The follwing project is hosted in https://matat.grgbishal.com
 - It has its **_APP_ENV_** set to **_testing_** (So the scheduler runs every minute, further more explanation in the _**Kernel.php**_ section below)
-- The swagger API documentation is hosted here: https://leonschiffer.github.io/MatatInterviewTestSwagger
+- The swagger API documentation is hosted here: https://leonschiffer.github.io/MatatInterviewTestSwagger (You can call the API directly from there)
 - This project has **_deploy.yml_** in **_.github/workflows_** folder which will automatically deploy new changes from main branch to production server
 
 ## Setting up
@@ -120,6 +120,15 @@ class WooCommerceApiRepository implements WooCommerceApiRepositoryInterface
         $this->consumer_secret = config("app.woocommerce_consumer_secret");
     }
 
+    /**
+     * For making all kind of API request to external WooCommerce API
+     * @param string $method values = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+     * @param string $url The path of the api
+     * @param array $data Payload for POST/PUT/PATCH requests
+     * @param array $headers To configure headers of a request
+     * @param array $query_params Parameters to be attached to url
+     * @return Response
+     */
     public function request(string $method, string $path, array $from_data = [], array $headers = [], array $query_params = []): Response
     {
         $response = Http::withQueryParameters([
