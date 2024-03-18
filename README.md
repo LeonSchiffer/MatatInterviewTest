@@ -213,5 +213,23 @@ Route::get("/orders", [OrderController::class, "index"]);
 - end_date: will show result lesser or equal to this date using date_created column
 - View the API Swagger documentation here: https://leonschiffer.github.io/MatatInterviewTestSwagger/
 
+#### Supervisor
+```conf
+[program:matat-schedule-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/artisan schedule:work
+startsecs=0
+autostart=true
+autorestart=true
+user=root
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/log/laravel-worker.log
+```
+- **_.docker/supervisor_** folder contains **_laravel-worker.conf_** file which has the required configuation to run **_artisan schedule:work_** command
+- This will be automatically run if you use Docker
+- Otherwise you will have to set this manually
+
+
 
 
