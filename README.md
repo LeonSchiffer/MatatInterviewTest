@@ -10,7 +10,7 @@ It is recommended that you use Docker for best compatibility
 
 ## Production
 - The follwing project is hosted in https://matat.grgbishal.com
-- It has its **_APP_ENV_** set to **_testing_** (So the scheduler runs every minute, further more explanation in the documentation below)
+- It has its **_APP_ENV_** set to **_testing_** (So the scheduler runs every minute, further more explanation in the _**Kernel.php**_ section below)
 - The swagger API documentation is hosted here: https://leonschiffer.github.io/MatatInterviewTestSwagger
 
 ## Setting up
@@ -284,6 +284,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\App;
 
 class Kernel extends ConsoleKernel
 {
@@ -292,13 +293,19 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Production
-        $schedule->command("order:sync-orders")->dailyAt("12:00")->timezone("Asia/Kathmandu");
-        $schedule->command("order:remove-unmodified")->dailyAt("00:00")->timezone("Asia/Kathmandu");
+        if (App::environment("testing")) {
+            //Testing
 
-        //Testing
-        // $schedule->command("order:sync-orders")->everyMinute()->timezone("Asia/Kathmandu");
-        // $schedule->command("order:remove-unmodified")->everyMinute()->timezone("Asia/Kathmandu");
+            // Ignore this command. This is here just for testing purpose
+            $schedule->command("inspire")->everyMinute()->appendOutputTo(storage_path("logs/inspire.log"));
+
+            $schedule->command("order:sync-orders")->everyMinute()->timezone("Asia/Kathmandu");
+            $schedule->command("order:remove-unmodified")->everyMinute()->timezone("Asia/Kathmandu");
+        } else {
+            // Production
+            $schedule->command("order:sync-orders")->dailyAt("12:00")->timezone("Asia/Kathmandu");
+            $schedule->command("order:remove-unmodified")->dailyAt("00:00")->timezone("Asia/Kathmandu");
+        }
     }
 
     /**
@@ -311,6 +318,7 @@ class Kernel extends ConsoleKernel
         require base_path('routes/console.php');
     }
 }
+
 ```
 - The Kernel.php holds the scheduler settings
 - There are two scheduled commands here
@@ -318,6 +326,8 @@ class Kernel extends ConsoleKernel
 - order:remove-unmodified is responsible for removing orders that are unmodified in the last 90 days
 - Timezone "Asia/Kathmandu" is being used otherwise Laravel will use UTC as the default timezone
 - You can set it here or in config/app.php, its your choice
+- If **_APP_ENV_** is set to **_testing_** in **_.env_** file, then the above commands will run every minute. This makes testing a lot easier
+- Otherwise it will run at the specified time of the day only
 
 #### SyncOrdersCommand.php
 ```php
