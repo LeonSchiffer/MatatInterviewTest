@@ -1,6 +1,6 @@
 ## Prerequisites
 - php8.2
-- laravel/framework:10.47 (This is important as whereAny query builder function is being used)
+- laravel/framework:10.47 (This version important as whereAny() query builder function is being used)
 - mysql8.0
 - supervisor (for running artisan schedule:work on background)
 
@@ -108,8 +108,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Production
         $schedule->command("order:sync-orders")->dailyAt("12:00")->timezone("Asia/Kathmandu");
         $schedule->command("order:remove-unmodified")->dailyAt("00:00")->timezone("Asia/Kathmandu");
+
+        //Testing
+        // $schedule->command("order:sync-orders")->everyMinute()->timezone("Asia/Kathmandu");
+        // $schedule->command("order:remove-unmodified")->everyMinute()->timezone("Asia/Kathmandu");
     }
 
     /**
@@ -129,6 +134,7 @@ class Kernel extends ConsoleKernel
 - order:remove-unmodified is responsible for removing orders that are unmodified in the last 90 days
 - Timezone "Asia/Kathmandu" is being used otherwise Laravel will use UTC as the default timezone
 - You can set it here or in config/app.php, its your choice
+- Uncomment the testing section if you want to run in every minute which makes it easier for testing purposes
 
 #### SyncOrdersCommand.php
 ```php
@@ -205,6 +211,7 @@ Route::get("/orders", [OrderController::class, "index"]);
 - search_query: Will search using the like operator on number and order_key column 
 - start_date: will show result greater or equal to this date using date_created column 
 - end_date: will show result lesser or equal to this date using date_created column
+- View the API Swagger documentation here: https://leonschiffer.github.io/MatatInterviewTestSwagger/
 
 
 
